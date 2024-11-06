@@ -1,20 +1,24 @@
 @import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Anton+SC&family=Rubik+Mono+One&family=Squada+One&display=swap");
 
+
 html {
     height: 100%;
 }
 body {
     min-height: 100%;
+    background-image: url('../img/background-bjk.jpg');
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: #eee;
     font-family: "Anton SC", serif;
+    color: white;
     letter-spacing: 4px;
+    margin: 0;
 }
 h1 {
     font-size: 3rem;
+    text-align: center;
 }
 .flip-clock {
     font-family: "Squada One", serif;

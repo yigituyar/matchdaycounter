@@ -1,56 +1,76 @@
 <?php
-include "lib/simple_html_dom.php";
-$url = 'https://bjk.com.tr/tr/fikstur/1/1/614/579/4445';
+include "../lib/simple_html_dom.php";
+$url = 'https://www.mackolik.com/takim/be%C5%9Fikta%C5%9F/ma%C3%A7lar/2ez9cvam9lp9jyhng3eh3znb4';
 $htmlContent = file_get_contents($url);
 $html = str_get_html($htmlContent);
+
+function getMatchTime($matchUrl)
+{
+    $matchTimePage = file_get_contents($matchUrl);
+    $matchTimeHtml = str_get_html($matchTimePage);
+    $matchTimeElement = $matchTimeHtml->find('.p0c-soccer-match-details-header__score-time', 0);
+    $matchTime = $matchTimeElement->innertext;
+    return $matchTime;
+}
+
+
 
 if (!$html) {
     echo "Error fetching the URL";
     exit;
 }
 
-$table = $html->find('.f-table', 0);
+$table = $html->find('.page-team-fixtures__container', 0);
 if ($table) {
-    $fixtures = $table->find('tr'); // Tüm <tr> etiketlerini bul
+    $count = 0;
+    $fixtures = $table->find('.p0c-team-matches__teams-container'); // Tüm <tr> etiketlerini bul
     foreach ($fixtures as $match) {
-        if (strpos($match->innertext, 'Beşiktaş') !== false) {
-            $dateTimeElement = $match->find('td.a span', 0);
-            $dateTime = $dateTimeElement->innertext;
-            $opponentElement = $match->find('td.d', 0);
-            $opponent = $opponentElement->innertext;
-            if ($opponent == "Beşiktaş") {
-                $opponentElement = $match->find('td.cc', 0);
-            } else {
-                $opponentElement = $match->find('td.cc', 0);
-            }
-            $opponent = $opponentElement->innertext;
-            echo "Beşiktaş'ın rakibi: " . trim($opponent) . "<br>";
-            $data = $dateTime;
-            $dateEndPos = strpos($data, '<br');
-            $dateTime = trim(substr($data, 0, $dateEndPos));
+        $matchHtml = $match->innertext;
 
-            $smallStartPos = strpos($data, '<small>') + strlen('<small>');
-            $smallEndPos = strpos($data, '</small>', $smallStartPos);
-            $stadium = trim(substr($data, $smallStartPos, $smallEndPos - $smallStartPos));
+        if (strpos($matchHtml, 'p0c-team-matches__button--start-time') !== false) {
+            $dateTimeElement = $match->find('.p0c-team-matches__button', 0);
+            $dateTimeMD = $dateTimeElement->find("span", 0)->innertext;
+            $dateTimeY = $dateTimeElement->find("span", 1)->innertext;
+            $date = $dateTimeMD . trim($dateTimeY);
+            $matchURL = $dateTimeElement->href;
+            $dateTime = $date . getMatchTime($matchURL);
+            $dateTime = DateTime::createFromFormat('d.m Y H:i', trim($dateTime));
+            $dateTime = $dateTime->modify('+3 hours');
 
-            $stadium = strip_tags($stadium);
-            $dateTime= strip_tags($dateTime);
+            $dateTime = $dateTime->format('H:i Y.m.d');
+
+
+
+            $opponent = strpos($match->find(".p0c-team-matches__team-full-name", 0)->innertext, "Beşiktaş") !== false
+                ? $match->find(".p0c-team-matches__team-full-name", 1)->innertext
+                : $match->find(".p0c-team-matches__team-full-name", 0)->innertext;
+            echo "<a href='" . $matchURL . "'>maç sayfası </a>";
             echo $dateTime;
-            $dateTime = DateTime::createFromFormat('d.m.Y H.i', trim($dateTime))->format('H:i Y.m.d');
+            echo " Rakip takım: " . trim($opponent) . "<br>";
 
-            echo "Tarih ve saat: " . trim($dateTime) . "<br>";
-            echo "Stadyum: ". trim($stadium). "<br>";
+
+            $matchData = [
+                "matchUrl" => $matchURL,
+                "dateTime" => $dateTime,
+                "opponent" => trim($opponent)
+            ];
+            if(trim($opponent) !=="BAY"){
+                $matchInfo[] = $matchData;
+            }
         }
     }
-    $matchInfo = [
-        "opponent" => trim($opponent),
-        "dateTime" => trim($dateTime),
-        "stadium" => trim($stadium)
-    ];
+    usort($matchInfo, function ($a, $b) {
+        // Tarih formatını DateTime nesnesine dönüştür
+        $dateA = DateTime::createFromFormat('H:i Y.m.d', $a['dateTime']);
+        $dateB = DateTime::createFromFormat('H:i Y.m.d', $b['dateTime']);
+        
+        // Karşılaştırma
+        return $dateA <=> $dateB;
+    });
     json_encode($matchInfo);
     $infoFile = "../src/data/infos.json";
     file_put_contents($infoFile, strval(json_encode($matchInfo)));
-
 } else {
     echo "Fikstür tablosu bulunamadı.";
 }
+?>

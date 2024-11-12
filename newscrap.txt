@@ -1,0 +1,12 @@
+.page-team-fixtures__container içindeki tüm
+eğer içinde .p0c-team-matches__button p0c-team-matches__button--start-time varsa
+
+.p0c-team-matches__box getir
+içindeki 
+.p0c-team-matches__button p0c-team-matches__button--start-time
+içindeki iki/tüm span valuelarını concatenate et -> date
+&&
+içindeki p0c-team-matches__team-full-name değerlerini getir "Beşiktaş" olmayan -> opponentTeam 
+
+arrayi json'a yazdır jsondan maça en yakın tarihli tarihi al
+

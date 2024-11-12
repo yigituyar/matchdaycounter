@@ -124,14 +124,13 @@ fetch("src/data/infos.json")
     })
     .then((data) => {
         // JSON verisini değişkenlere ata
+        data = data[0];
         opponent = data.opponent;
         dateTime = data.dateTime;
-        stadium = data.stadium;
 
         // Verileri kullanma
         console.log("opponent:", opponent);
         console.log("dateTime:", dateTime);
-        console.log("stadium:", stadium); // Dizi olarak yazdır
     })
     .catch((error) => {
         console.error("Bir hata oluştu:", error); // Hata yönetimi
@@ -141,7 +140,7 @@ fetch("src/data/infos.json")
 function displayUserInfo() {
     if (opponent && dateTime && stadium) {
         console.log(
-            `Rakip Adı: ${opponent}, Tarih: ${dateTime}, Stadyum: ${stadium}`
+            `Rakip Adı: ${opponent}, Tarih: ${dateTime}`
         );
     } else {
         console.log("Veri henüz yüklenmedi.");
